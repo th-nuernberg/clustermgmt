@@ -1,0 +1,48 @@
+---
+
+# - name: Print Debug
+#   debug:
+#     msg: "Ansible Hostname: {{ ansible_hostname }}"
+
+- name: Install autofs
+  apt:
+    name: autofs
+    state: present
+    update_cache: yes
+
+- name: Template auto.master
+  template:
+    src: "auto.master.j2"
+    dest: "/etc/auto.master"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: Template auto.home
+  template:
+    src: "auto.home.j2"
+    dest: "/etc/auto.home"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: 'ansible_hostname != autofs_home_server'
+
+- name: Template auto.nfs
+  template:
+    src: "auto.nfs.j2"
+    dest: "/etc/auto.nfs"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: 'ansible_hostname != autofs_nfs_server'
+
+- name: Ensure autofs service is enabled and running
+  service:
+    name: autofs
+    enabled: yes
+    state: restarted
+
+

@@ -1,0 +1,38 @@
+---
+
+- name: Set uri in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'uri ldapi:///'
+    line: uri ldap://{{ ldap_server_ip }}/
+
+- name: Set base in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'base dc=example,dc=net'
+    line: base {{ ldap_base }}
+
+- name: Set binddn in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: '#binddn cn=proxyuser,dc=padl,dc=com'
+    line: binddn cn=ldapconnector,{{ ldap_base }}
+
+- name: Unset rootbinddn in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'rootbinddn cn=manager,dc=example,dc=net'
+    line: '# rootbinddn cn=manager,dc=example,dc=net'
+
+- name: Set bindpw in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: '#bindpw '
+    line: bindpw {{ vault_ldap_pass }}
+    
+- name: Set pam_password in ldap.conf
+  lineinfile:
+    path: /etc/ldap.conf
+    regexp: 'pam_password md5'
+    line: pam_password clear
+

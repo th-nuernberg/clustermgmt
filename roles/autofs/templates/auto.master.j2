@@ -1,0 +1,7 @@
+{% if ansible_hostname != autofs_home_server %}
+/home /etc/auto.home
+{% endif %}
+{% if ansible_hostname != autofs_nfs_server %}
+/nfs /etc/auto.nfs
+{% endif %}
+/net -hosts

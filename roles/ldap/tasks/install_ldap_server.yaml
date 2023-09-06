@@ -1,0 +1,20 @@
+---
+
+- name: "Install ldap"
+  apt:
+    pkg:
+      - slapd
+      - ldap-utils
+    state: present
+
+- name: Create SSL directory for ldap
+  file: path=/etc/ssl/certs/ state=directory
+  when: 'ansible_hostname == server_ldap'
+
+# - name: Copy ldapcacert.crt
+#   copy: 'src={{ssl_crt_file}} dest=/etc/ssl/certs/ldapcacert.crt'
+#   when: 'ansible_hostname ==  {{ server_ldap }}'
+
+- name: Restart ldap
+  service: name=slapd state=restarted
+  when: 'ansible_hostname == server_ldap'

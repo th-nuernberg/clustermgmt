@@ -1,0 +1,9 @@
+##
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+
+# Configuration
+RunTimeDelete="runc --rootless=true --root=/tmp/ delete --force %n.%u.%j.%s.%t"
+RunTimeKill="runc --rootless=true --root=/tmp/ kill -a %n.%u.%j.%s.%t"
+RunTimeQuery="runc --rootless=true --root=/tmp/ state %n.%u.%j.%s.%t"
+RunTimeRun="runc --rootless=true --root=/tmp/ run %n.%u.%j.%s.%t -b %b"

@@ -1,0 +1,63 @@
+---
+- name: slurm_mysql_password variable must be set
+  assert:
+    that: "slurm_mysql_password is defined"
+
+- name: Make sure pymysql is present
+  pip:
+    name: pymysql
+    state: present
+
+- name: MariaDB installation
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-server
+
+- name: Start MariaDB service
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: wait for mysql at port 3306 to start
+  wait_for: port=3306 delay=10 timeout=60
+
+- name: Set MariaDB root password for the first time
+  no_log: true
+  mysql_user:
+    name: root
+    password: "{{ mariadb_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  ignore_errors: yes
+
+- name: Create slurm SQL user
+  mysql_user: 
+    name: slurm 
+    password: "{{ slurm_mysql_password }}"
+    login_host: localhost
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    # login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+  register: mysqlslurmuser
+  ignore_errors: yes
+  tags: debug
+
+- name: print mysqlslurmuser
+  debug: var=mysqlslurmuser verbosity=1
+  tags: debug
+  changed_when: False
+
+- name: ensure slurm sql user has a password and privileges if it does not exist or if it was just added
+  mysql_user:
+     login_host: localhost
+     login_user: root
+     login_password: "{{ mariadb_root_password }}"
+     name: slurm
+     password: "{{ slurm_mysql_password }}"
+     priv: "slurm_acct_db.*:ALL"
+     state: present
+     update_password: always
+  when: mysqlslurmuser is failed or mysqlslurmuser is changed

@@ -1,0 +1,74 @@
+---
+
+# other possibly required deps: 'ruby', 'ruby-dev', 'libpam0g-dev',
+- name: Install general build dependencies for Slurm
+  apt:
+    name: ['git', 'gcc', 'make', 'munge', 'libmunge-dev', 'libmunge2', 'libssl-dev', 'libmysqlclient-dev', 'libjson-c-dev', 'libhttp-parser-dev', 'liblua5.3-dev']
+    state: present
+
+- name: Install build dependencies for Slurm daemon
+  apt:
+    name: ['libnvidia-ml-dev']
+    state: present
+  when: "'slurmexechosts' in group_names or 'exec' in slurm_roles"
+
+- name: Download Slurm from Github
+  get_url:
+    url: "https://github.com/SchedMD/slurm/archive/refs/tags/slurm-{{ slurm_version }}.tar.gz"
+    dest: /tmp/
+
+- name: Extract Slurm sources
+  unarchive:
+    src: "/tmp/slurm-slurm-{{ slurm_version }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Configure Slurm build
+  command: "chdir=/tmp/slurm-slurm-{{ slurm_version }} ./configure --disable-gtktest --prefix={{ slurm_source_install_dir }} --sysconfdir={{ slurm_config_dir }} --with-pmix={{ pmix_install_dir }} --with-munge --with-json"
+
+- name: Compile Slurm default target
+  make: 
+    chdir: "/tmp/slurm-slurm-{{ slurm_version }}"
+    params:
+      MAKEFLAGS: "-j {{ ansible_processor_vcpus }}"
+
+- name: Compile Slurm contrib target
+  make: 
+    chdir: "/tmp/slurm-slurm-{{ slurm_version }}"
+    target: contrib
+
+- name: Run Slurm install target
+  make: 
+    chdir: "/tmp/slurm-slurm-{{ slurm_version }}"
+    target: install
+
+# This enables helpful tools outside of the standard Slurm installation 
+# such as seff for efficiency reporting
+- name: Run Slurm contribs install target
+  make: 
+    chdir: "/tmp/slurm-slurm-{{ slurm_version }}/contribs"
+    target: install
+
+- name: Create Slurm config directory
+  file:
+    path: "{{ slurm_config_dir }}"
+    owner: root
+    group: root
+    state: directory
+
+- name: Create plugstack directory
+  file: 
+    path: "{{ slurm_config_dir }}/plugstack.conf.d"
+    owner: root 
+    group: root 
+    state: directory
+
+- name: Create Slurm lib and log directory
+  file:
+    path: "{{ item }}"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    state: directory
+  with_items:
+    - /var/lib/slurm
+    - /var/log/slurm

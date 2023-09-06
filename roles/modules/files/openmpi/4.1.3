@@ -1,0 +1,19 @@
+#%Module1.0#####################################################################
+##
+## openmpi 4.1.3 modulefile
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+proc ModulesHelp { } {
+        puts stderr "\tSets up environment for Open MPI $version\n"
+}
+
+module-whatis   "sets up environment for Open MPI 4.1.3"
+
+# for Tcl script use only
+set     version 4.1.3
+set     root    /usr/local
+
+setenv  LD_LIBRARY_PATH $root/lib:$root/lib/openmpi
+setenv  MPICC $root/bin/mpicc
+
+append-path     PATH    $root/bin

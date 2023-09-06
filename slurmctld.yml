@@ -1,0 +1,28 @@
+# This playbook installs the Slurm control daemon on a head node
+# Run with sudo ansible-playbook -i inventory --ask-become-pass --ask-pass --ask-vault-pass slurmctld.yml --tags install
+# (for some weird reason running it sometimes requires sudo)
+- name: Install controller and database on Slurm head node
+  hosts: slurmHead
+  vars_files:
+    - ./vars/vault.yml
+    - ./vars/main.yml
+  become: yes
+  remote_user: mladm
+  become_user: root
+  vars:
+    slurm_roles: ['controller', 'dbd', 'container']
+    slurm_user: 'slurm'
+    slurm_create_user: yes
+    slurm_from_source: yes
+    slurm_version: '21-08-8-2'
+    slurm_version_pretty: '21.08.8'
+    # slurm_source_install_dir: '/usr/local/sbin/slurm'
+    slurm_source_install_dir: '/usr/local'
+    slurm_config_dir: '/etc/slurm'
+    # Set to 'yes if you want to install munge and copy the existing munge.key to the node'
+    slurm_configure_munge: yes
+    install_mariadb: yes
+    mariadb_root_password: '{{ vault_mariadb_root_password }}'
+    slurm_mysql_password: '{{ vault_slurm_mysql_password}}'
+  roles:
+    - slurm

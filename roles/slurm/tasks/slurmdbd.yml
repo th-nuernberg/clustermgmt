@@ -1,0 +1,43 @@
+---
+
+- name: Install Slurm DB packages
+  package:
+    name: "{{ __slurm_packages.slurmdbd }}"
+    state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: not slurm_from_source
+
+- name: Install slurmdbd.conf
+  template:
+      src: slurmdbd.conf.j2
+      dest: "{{ slurm_config_dir }}/slurmdbd.conf"
+      owner: "{{ __slurm_user_name }}"
+      group: "{{ __slurm_group_name }}"
+      mode: 0600
+  notify:
+      - reload slurmdbd
+
+- name: Template the service files for Slurm DBD
+  template:
+    src: "{{ item }}.j2"
+    dest: "/lib/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - slurmdbd.service
+  when: slurm_from_source
+
+- name: Create slurm log directory
+  file:
+    path: "{{ __slurmdbd_config.LogFile | dirname }}"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0755
+    state: directory
+  when: slurm_create_dirs and __slurmdbd_config.LogFile
+
+- name: Allow internal access to slurmdb (e.g. for efficiency reporting)
+  ufw:
+    rule: allow
+    port: "{{ __slurmdbd_config.DbdPort }}"
+    from_ip: '{{ __slurmdbd_config.gateway_ip }}'

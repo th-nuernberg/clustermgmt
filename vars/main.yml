@@ -1,0 +1,12 @@
+---
+
+server_ldap: "" # ip or hostname of ldap server
+gateway_ip: "" # ip range of the gateway e.g 172.169.89.0/24
+gateway_ip_hq: "" # ip range of the gateway in 2nd location e.g
+ldap_server_ip: "" # ip of ldap server
+ldap_binddn: "" # binddn of ldap server e.g cn=ldapconnector,dc=informatik,dc=gruppe,dc=de
+ldap_base: "" # base of ldap server e.g dc=cs,dc=gruppe,dc=de
+autofs_home_server: "" # hostname of home server
+autofs_home_server_ip: "" # ip of home server
+autofs_nfs_server: ""   # hostname of nfs server
+autofs_nfs_server_ip: "" # ip of nfs server

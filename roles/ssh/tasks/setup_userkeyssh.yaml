@@ -1,0 +1,23 @@
+---
+
+- name: Install userkeys.sh to /usr/local/bin/userkeys.sh
+  copy:
+    src: userkeys.sh
+    dest: /usr/local/bin/userkeys.sh
+    owner: root
+    group: root
+    mode: 0755
+    backup: yes
+# DW: This doesn't make sense
+# when: 'ansible_hostname == server_ldap'
+
+- name: Install userkeys.secret to /usr/local/etc/userkeys.secret
+  copy:
+    src: userkeys.secret
+    dest: /usr/local/etc/userkeys.secret
+    owner: nobody
+    group: nogroup
+    mode: 0400
+    backup: yes
+# DW: This doesn't make sense
+# when: 'ansible_hostname == server_ldap'

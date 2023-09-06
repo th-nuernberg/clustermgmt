@@ -1,0 +1,17 @@
+[all]
+//all doamins
+
+[dmz]
+//domains
+
+[hq]
+//domains in 2nd location
+
+[slurmAll]
+//all slurm nodes + head
+
+[slurmHead]
+//head node
+
+[slurmNode]
+//all slurm nodes

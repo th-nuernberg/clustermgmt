@@ -1,0 +1,48 @@
+# This playbook installs everything that is common among all servers in HQ/KIZ-DMZ
+# 
+# Prerequisites: 
+# - Setup mladm user
+# - Setup CUDA
+# See https://github.com/th-nuernberg/mladm for instructions on how to do this. 
+#
+# Run (for some weird reason running sometime it requires sudo):
+# [sometime]: sudo ansible-playbook -i inventory --ask-become-pass --ask-pass setup_common.yml
+# [some other time]: ansible-playbook -i inventory --ask-become-pass --ask-pass setup_common.yml
+# ======================== NOTE FOR ENVIRONMENT MODULES ===========================
+# Make sure that you install modules on the Execution Nodes AND on the Cluster head!
+# Reason:
+# Slurm does not source /etc/profile.d automatically but it will transfer 
+# the environment variables currently set on the node from which the command is executed. 
+# Having modules in the path of the head node is the easiest way 
+# to make it available on the execution node as well without having to write a Prolog script. 
+# =================================================================================
+- name: Install necessary packages and setup things like LDAP, UFW, AUTOFS, and SSH
+  hosts: all
+  become: yes
+  remote_user: mladm
+  become_user: root
+  vars_files:
+    - ./vars/vault.yml
+    - ./vars/main.yml
+  vars:
+    install_pkg: yes
+    install_autofs: yes
+    ldap_server: no # Enable this if you want to install a new LDAP server
+    ldap_client: yes
+    edit_ldap_conf: yes
+    setup_ufw: yes
+    setup_ssh: yes
+    setup_conda: yes
+    setup_env_modules: yes
+
+    # Set firewall rules to allow communication between nodes with OpenMPI installed
+    mpi_nodes: 
+      - TODO: add nodes here
+  roles:
+    - pkg
+    - autofs
+    - ldap
+    - ufw
+    - ssh
+    - anaconda
+    - modules

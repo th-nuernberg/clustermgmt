@@ -1,0 +1,29 @@
+--[[
+-- This script limits resources for interactive jobs to a specific QOS defined in allowed_qos. 
+-- If you plan on developing this further, look in
+-- https://github.com/SchedMD/slurm/blob/master/src/plugins/job_submit/lua/job_submit_lua.c
+-- and search for "_get_job_req_field" to see, which fields can be accessed via job_desc.
+--]]
+
+function slurm_job_submit( job_desc, part_list, submit_uid )
+    local allowed_qos = "interactive"
+    local user_qos = job_desc.qos
+    
+    -- When the user didn't set a qos, we fall back to default
+    if ( job_desc.qos == nil ) then
+        user_qos = job_desc.default_qos
+    end
+
+    if ((job_desc.script == nil or job_desc.script == '') and user_qos ~= allowed_qos ) then
+            slurm.log_user("slurm_job_submit: Interactive job submitted by %s with QOS %s was rejected. Standalone interactive jobs are only allowed with QOS %s.", job_desc.user_name, user_qos, allowed_qos)
+            return slurm.ESLURM_ACCESS_DENIED
+    end
+    return slurm.SUCCESS
+end
+
+function slurm_job_modify( job_desc, job_rec, part_list, modify_uid )
+    return slurm.SUCCESS
+end
+
+slurm.log_info("initialized")
+return slurm.SUCCESS

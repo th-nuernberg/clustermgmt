@@ -1,0 +1,5 @@
+data -fstype=nfs,rw,retry=0 {{ autofs_nfs_server_ip }}:/mnt/md0/data
+scratch -fstype=nfs,rw,retry=0 {{ autofs_nfs_server_ip }}:/mnt/md0/scratch
+proceedings -fstype=nfs,rw,retry=0 {{ autofs_nfs_server_ip }}:/mnt/md0/proceedings
+tools -fstype=nfs,rw,retry=0 {{ autofs_nfs_server_ip }}:/mnt/md0/tools
+oci -fstype=nfs,rw,retry=0 {{ autofs_nfs_server_ip }}:/mnt/md0/oci

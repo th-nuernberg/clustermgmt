@@ -1,0 +1,41 @@
+---
+
+# - name: Print Debug
+#   debug:
+#     msg: "Ansible Hostname: {{ ansible_hostname }}"
+
+# Only on main
+- name: Template exports.home
+  template:
+    src: "exports.home.j2"
+    dest: "/etc/exports"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: 'ansible_hostname == autofs_home_server'
+
+# Only on ml1
+- name: Template exports.nfs
+  template:
+    src: "exports.nfs.j2"
+    dest: "/etc/exports"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: 'ansible_hostname == autofs_nfs_server'
+
+# On all others
+- name: Template exports.mnt
+  template:
+    src: "exports.mnt.j2"
+    dest: "/etc/exports"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: ansible_hostname != autofs_nfs_server and ansible_hostname == autofs_home_server
+
+- name: Run exportfs -a command
+  command: "exportfs -a"

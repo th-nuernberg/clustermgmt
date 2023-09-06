@@ -1,0 +1,8 @@
+- name: Include autofs task
+  include_tasks: autofs.yml
+  when: install_autofs
+
+- name: Include autofs exports task
+  include_tasks: exports.yml
+  when: install_autofs
+

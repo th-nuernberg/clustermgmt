@@ -1,0 +1,52 @@
+---
+
+- name: Install dependencies for Environment Modules
+  apt:
+    name: tcl-dev
+    state: present
+
+- name: Download Environment Modules sources from Github
+  get_url:
+    url: "https://github.com/cea-hpc/modules/releases/download/v{{ modules_version }}/modules-{{ modules_version }}.tar.gz"
+    dest: /tmp/
+
+- name: Extract Environment Modules sources
+  unarchive:
+    src: "/tmp/modules-{{ modules_version }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Configure build
+  command: "chdir=/tmp/modules-{{ modules_version }} ./configure --prefix={{ modules_path }}"
+
+# This will install Modules under the path set in modules_path
+- name: Compile target
+  make: 
+    chdir: "/tmp/modules-{{ modules_version }}"
+
+- name: Run install target
+  make: 
+    chdir: "/tmp/modules-{{ modules_version }}"
+    target: install
+
+- name: Remove installer
+  file:
+    state: absent
+    path: "/tmp/modules-{{ modules_version }}.tar.gz"
+
+- name: Remove installer folder
+  file:
+    state: absent
+    path: "/tmp/modules-{{ modules_version }}"
+
+- name: Enable Modules initialization at shell startup
+  file:
+    src: "{{ modules_path }}/init/profile.sh"
+    dest: "/etc/profile.d/modules.sh"
+    state: link
+
+- name: Enable Modules initialization at shell startup
+  file:
+    src: "{{ modules_path }}/init/profile.csh"
+    dest: "/etc/profile.d/modules.csh"
+    state: link

@@ -1,0 +1,7 @@
+---
+
+install_autofs: yes
+autofs_home_server: '{{  autofs_home_server  }}'
+autofs_home_server_ip: '{{  autofs_home_server_ip }}'
+autofs_nfs_server: '{{ autofs_nfs_server }}'
+autofs_nfs_server_ip: '{{ autofs_nfs_server_ip}}'

@@ -1,0 +1,10 @@
+# This playbook can be used to distribute changes to slurm.conf across all nodes.
+# Run with sudo ansible-playbook -i inventory --ask-become-pass --ask-pass slurm_redistribute_config.yml --tags reconfigure
+
+- name: Redistribute slurm.conf
+  hosts: slurmAll
+  become: yes
+  remote_user: mladm
+  become_user: root
+  roles:
+    - slurm

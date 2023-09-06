@@ -1,0 +1,62 @@
+##
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+
+# General Configuration
+AccountingStorageEnforce=associations,limits,qos
+AccountingStorageHost={{ slurm_ctld_host }}
+AccountingStoragePort={{ __slurmdbd_config.DbdPort }}
+AccountingStorageTRES=gres/gpu,gres/gpu:rtx,gres/gpu:a100
+AccountingStorageType=accounting_storage/slurmdbd
+AuthType=auth/munge
+ClusterName={{ slurm_cluster_name }}
+CryptoType=crypto/munge
+DebugFlags=NO_CONF_HASH
+# DefCpuPerGPU=4
+DefMemPerCPU=2048
+GresTypes=gpu
+InactiveLimit=600
+JobAcctGatherFrequency=30
+JobAcctGatherType=jobacct_gather/cgroup
+JobSubmitPlugins=lua
+LaunchParameters=use_interactive_step
+MaxMemPerCPU=95367
+PriorityWeightTRES=CPU=1000,Mem=2000,GRES/gpu=3000
+# Proctracktype=proctrack/linuxproc
+Proctracktype=proctrack/cgroup
+PriorityType=priority/multifactor # basic means strict FIFO
+#SelectType=select/linear
+SelectType=select/cons_tres
+SelectTypeParameters=CR_Core_Memory
+SlurmctldHost={{ slurm_ctld_host }}
+SlurmctldLogFile={{ __slurm_config.SlurmctldLogFile }}
+SlurmctldPidFile={{ __slurm_config.SlurmctldPidFile }}
+SlurmctldPort=6817
+SlurmdLogFile={{ __slurm_config.SlurmdLogFile }}
+SlurmdPidFile={{ __slurm_config.SlurmdPidFile }}
+SlurmdPort=6818
+SlurmdSpoolDir={{ __slurm_config.SlurmdSpoolDir }}
+SlurmUser={{ __slurm_user_name }}
+StateSaveLocation={{ __slurm_config.StateSaveLocation }}
+SrunPortRange=59000-59999
+TaskPlugin=affinity,cgroup
+# This limit is 600s instead of the default 60s 
+# so we avoid going into drain state when users 
+# hit the time limit during container downloads via pyxis
+UnkillableStepTimeout=600
+# This only works if Slurm is configured via --with-pmix
+MpiDefault=pmix_v3
+# TaskProlog=/etc/slurm/task_prolog.sh
+# Prolog=/etc/slurm/prolog.sh
+
+# Node Configuration
+{% for i in slurm_nodes %}
+NodeName={{ i.name }}{% for k in i | sort if k != 'name' %} {{ k }}={{ 'YES' if i[k] is sameas true else ('NO' if i[k] is sameas false else i[k]) }}{{' '}}{% endfor %}
+{{'\n'}}
+{% endfor %}
+
+# Partition Configuration
+{% for i in slurm_partitions %}
+PartitionName={{ i.name }}{% for k in i | sort if k != 'name' %} {{ k }}={{ 'YES' if i[k] is sameas true else ('NO' if i[k] is sameas false else i[k]) }}{{' '}}{% endfor %}
+{{'\n'}}
+{% endfor %}

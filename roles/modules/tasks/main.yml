@@ -1,0 +1,17 @@
+- name: Check if modules path already exists
+  stat:
+    path: "{{ modules_path }}"
+  register: modules
+
+- name: Check if modules_path already exists
+  debug:
+    msg: "{{ modules_path }} already exists! Won't install Environment modules"
+  when: modules.stat.isdir is defined and modules.stat.isdir
+  
+- name: Include install_environment_modules task
+  include_tasks: install_environment_modules.yml
+  when: (setup_env_modules) and not (modules.stat.isdir is defined and modules.stat.isdir)
+
+- name: Include copy_modulefiles task
+  include_tasks: copy_modulefiles.yml
+  when: setup_env_modules

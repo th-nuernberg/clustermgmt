@@ -1,0 +1,122 @@
+---
+
+- name: "Install ldap-client"
+  apt:
+    pkg:
+      - libnss-ldap
+      - libpam-ldap
+      - nslcd
+    state: present
+      
+- name: Create SSL directory for ldap
+  file: path=/etc/ssl/certs/ state=directory
+  
+
+# - name: Copy ldapcacert.crt
+#   copy: src='{{ssl_crt_file}}' dest='/etc/ssl/certs/ldapcacert.crt'
+#   when: 'ansible_hostname == stuff["server_ldap"]'
+    
+# - name: Configure ldap
+#   template: src=./conftemplates/ldap.j2 dest=/etc/ldap/ldap.conf
+    
+# - name: Update nsswitch.conf
+#   template: src=./conftemplates/nsswitch.j2 dest=/etc/nsswitch.conf
+
+
+- name: Edit /etc/ldap/ldap.conf line by line.
+  lineinfile:
+    path: /etc/ldap/ldap.conf
+    backup: yes
+    regexp: '#URI	ldap://ldap.example.com ldap://ldap-master.example.com:666'
+    line: "{{ item }}"
+  loop:
+    - 'URI ldap://{{ ldap_server_ip }}'
+    - 'BINDDN {{ ldap_bind }}'
+    - 'BINDPW {{ vault_ldap_pass }}'
+    
+
+- name: Edit /etc/ldap/ldap.conf line by line.
+  lineinfile:
+    path: /etc/ldap/ldap.conf
+    regexp: 'TLS_CACERT	/etc/ssl/certs/ca-certificates.crt'
+    line: "{{ item }}"
+  loop:
+    - 'bind_timelimit 30'
+    - 'timelimit 30'
+    - 'sudoers_debug 0'
+    - 'sudoers_timed yes'
+    - 'sudoers_base   ou=SUDOers,{{ ldap_base}}'
+    - 'TLS_CACERT      /etc/ssl/certs/ldapcacert.crt'
+    
+# What to do with the Cert??
+
+- name: Install cert.crt to /etc/ssl/certs/ldapcacert.crt
+  copy:
+    src:  cert.crt
+    dest: /etc/ssl/certs/ldapcacert.crt
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: Edit /etc/nslcd.conf line by line.
+  lineinfile:
+    path: /etc/nslcd.conf
+    backup: yes
+    regexp: 'uri ldapi:///'
+    line: 'ldap://{{ ldap_server_ip }}'
+
+- name: Edit /etc/nslcd.conf line by line.
+  lineinfile:
+    path: /etc/nslcd.conf
+    regexp: '^(.*)base dc=example,dc=net(.*)$'  
+    line: 'base {{ ldap_base }}'
+
+- name: Edit /etc/nslcd.conf line by line.
+  lineinfile:
+    path: /etc/nslcd.conf
+    regexp: '^(.*)#binddn cn=annonymous,dc=example,dc=net(.*)$'  
+    line: 'binddn {{ ldap_binddn }}'
+
+- name: Edit /etc/nslcd.conf line by line.
+  lineinfile:
+    path: /etc/nslcd.conf
+    regexp: '^(.*)#bindpw secret(.*)$'  
+    line: 'bindpw {{ vault_ldap_pass}}'
+
+- name: Edit /etc/nsswitch.conf line by line.
+  lineinfile:
+    path: /etc/nsswitch.conf
+    backup: yes
+    regexp: 'passwd:         files systemd'
+    line: 'passwd:         files systemd ldap sss'
+
+- name: Edit /etc/nsswitch.conf line by line.
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: 'group:          files systemd'
+    line: 'group:          files systemd ldap sss'
+
+- name: Edit /etc/nsswitch.conf line by line.
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: 'shadow:         files'
+    line: 'shadow:         files ldap sss'
+
+- name: Edit /etc/nsswitch.conf line by line.
+  lineinfile:
+    path: /etc/nsswitch.conf
+    line: 'sudoers:        files ldap'
+    create: yes
+
+# - name: Update common-sessions
+#   template: src=./conftemplates/common_sessions.j2 dest=/etc/pam.d/common-session
+
+- name: Update common-sessions
+  lineinfile:
+    path: /etc/pam.d/common-session
+    insertafter: 'session optional                        pam_ldap.so'
+    line: 'session required        pam_mkhomedir.so skel=/etc/skel/ umask=077'
+
+- name: Restart nslcd
+  service: name=nslcd state=started

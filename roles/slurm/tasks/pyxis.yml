@@ -1,0 +1,31 @@
+---
+
+- name: Download Pyxis from Github
+  get_url:
+    url: "https://github.com/NVIDIA/pyxis/archive/refs/tags/v{{ __pyxis_config.version }}.tar.gz"
+    dest: /tmp
+
+- name: Extract Pyxis sources
+  unarchive:
+    src: "/tmp/pyxis-{{ __pyxis_config.version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Run Pyxis install target
+  make: 
+    chdir: "/tmp/pyxis-{{ __pyxis_config.version }}"
+    target: install
+
+- name: Create plugstack directory
+  file: 
+    path: "{{ slurm_config_dir }}/plugstack.conf.d"
+    owner: root 
+    group: root 
+    state: directory
+
+- name: Create symbolic link for pyxis.conf
+  file:
+    src: "/usr/local/share/pyxis/pyxis.conf"
+    dest: "{{ slurm_config_dir }}/plugstack.conf.d/pyxis.conf"
+    state: link

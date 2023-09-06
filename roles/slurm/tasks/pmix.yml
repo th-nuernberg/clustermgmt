@@ -1,0 +1,34 @@
+---
+
+- name: Install build dependencies for PMIx
+  apt:
+    name: ['gcc', 'make', 'libevent-dev', 'libhwloc-dev']
+    state: present
+
+- name: Download PMIx
+  get_url:
+    url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.gz"
+    dest: /tmp/
+
+- name: Extract PMIx sources
+  unarchive:
+    src: "/tmp/pmix-{{ pmix_version }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Configure PMIx build
+  command: "chdir=/tmp/pmix-{{ pmix_version }} ./configure --prefix={{ pmix_install_dir }} --with-munge=/usr"
+
+- name: Compile PMIx all target
+  make: 
+    chdir: "/tmp/pmix-{{ pmix_version }}"
+    target: all
+    params:
+      MAKEFLAGS: "-j 16"
+
+- name: Run PMIx install target
+  make: 
+    chdir: "/tmp/pmix-{{ pmix_version }}"
+    target: install
+    params:
+      MAKEFLAGS: "-j 16"

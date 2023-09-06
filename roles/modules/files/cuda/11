@@ -1,0 +1,21 @@
+#%Module1.0#####################################################################
+##
+## cuda 11 modulefile
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+proc ModulesHelp { } {
+        puts stderr "\tSets up environment for CUDA $version\n"
+}
+
+module-whatis   "sets up environment for CUDA 11"
+
+# for Tcl script use only
+set     version 11
+set     root    /usr/local/cuda-${version}
+
+setenv  CUDA_HOME       $root
+
+append-path     PATH              $root/bin
+append-path     LD_LIBRARY_PATH   $root/lib64
+
+conflict cuda

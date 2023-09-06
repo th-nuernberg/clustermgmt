@@ -1,0 +1,80 @@
+---
+
+- name: Get Debian architecture
+  shell: dpkg --print-architecture
+  register: deb_architecture
+
+- name: Check if enroot is installed
+  command: dpkg-query -W enroot
+  register: enroot_deb_check
+  failed_when: enroot_deb_check.rc > 1
+  changed_when: enroot_deb_check.rc == 1
+
+- name: Download enroot from GitHub
+  get_url: 
+    url: "https://github.com/NVIDIA/enroot/releases/download/v{{ __enroot_config.version }}/{{ __enroot_config.package_name }}_{{ deb_architecture.stdout }}.deb"
+    dest: "/tmp"
+  when: enroot_deb_check.rc == 1
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Install enroot
+  apt: deb="/tmp/{{ __enroot_config.package_name }}_{{ deb_architecture.stdout }}.deb"
+  when: enroot_deb_check.rc == 1
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Check if enroot+caps is installed
+  command: dpkg-query -W enroot+caps
+  register: enroot_caps_deb_check
+  failed_when: enroot_caps_deb_check.rc > 1
+  changed_when: enroot_caps_deb_check.rc == 1
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Download enroot+caps from GitHub
+  get_url: 
+    url: "https://github.com/NVIDIA/enroot/releases/download/v{{ __enroot_config.version }}/{{ __enroot_config.caps_package_name }}_{{ deb_architecture.stdout }}.deb"
+    dest: "/tmp"
+  when: enroot_caps_deb_check.rc == 1
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Install enroot+caps
+  apt: deb="/tmp/{{ __enroot_config.caps_package_name }}_{{ deb_architecture.stdout }}.deb"
+  when: enroot_caps_deb_check.rc == 1
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: Install enroot.conf
+  template:
+      src: "{{ item }}.conf.j2"
+      dest: "/etc/enroot/{{ item }}.conf"
+      owner: "root"
+      group: "root"
+      mode: 0644
+      backup: yes
+  with_items:
+    - enroot
+
+- name: Create enroot data path
+  file:
+    path: "{{ __enroot_config.data_path }}"
+    owner: root
+    group: root
+    state: directory
+
+- name: Create data, run and cache directory for enroot
+  file:
+    path: "{{ __enroot_config.data_path }}/{{ item }}"
+    owner: root
+    group: root
+    mode: 0777
+    state: directory
+  with_items:
+    - run
+    - cache
+    - data
+
+- name: Create tmp directory for enroot
+  file:
+    path: "{{ __enroot_config.tmp_path }}"
+    owner: root
+    group: root
+    mode: 0777
+    state: directory

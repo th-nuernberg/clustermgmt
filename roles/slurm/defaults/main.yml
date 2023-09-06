@@ -1,0 +1,88 @@
+---
+
+slurm_upgrade: no
+slurm_roles: []
+# Note: Executing the command slurmd -C on a node will print its physical configuration
+# (sockets, cores, real memory size, etc.), which can be used to fill the information here.
+slurm_nodes:
+  - name: 'node1'
+    NodeAddr: '' # This is the hostname of the node
+    CPUs: '32'
+    Boards: '1'
+    SocketsPerBoard: '2'
+    CoresPerSocket: '16'
+    ThreadsPerCore: '2'
+    RealMemory: '64368'
+    # Number of cores reserved for system use. These cores will not be available for allocation to user jobs.
+    # (make sure this is large enough when you use enroot container)
+    CoreSpecCount: '8'
+    # Amount of memory, in megabytes, reserved for system use and not available for user allocations
+    # (make sure this is large enough when you use enroot container)
+    MemSpecLimit: '32768'
+
+    State: 'UNKNOWN'
+slurm_partitions:
+  - name: 'main'
+    Nodes: 'node1'
+    Default: 'YES'
+    MaxTime: 'INFINITE'
+    State: 'UP'
+
+slurm_ctld_host: '{{groups.slurmHead[0]}}'
+slurm_cluster_name: 'name'
+slurm_config_dir: '/etc/slurm'
+slurm_configure_munge: yes
+slurm_from_source: no
+slurm_source_install_dir: '/usr/local'
+slurm_version: '21-08-2-1'
+slurm_version_pretty: '21.08.2'
+slurm_create_user: yes
+slurm_rotate_logs: yes
+slurm_create_dirs: no
+slurm_redistribute_config: no
+install_mariadb: yes
+
+# Note that version 4.x doesn't seem to work with Slurm
+# you can check if pmix is available via
+# srun --mpi=list
+pmix_version: '3.2.3'
+pmix_install_dir: '/opt/pmix'
+
+slurmd_service_name: slurmd
+slurmctld_service_name: slurmctld
+slurmdbd_service_name: slurmdbd
+
+__slurm_config:
+  SlurmctldLogFile: '/var/log/slurm/slurmctld.log'
+  StateSaveLocation: '/var/lib/slurm/slurmctld'
+  SlurmdSpoolDir: '/var/lib/slurm/slurmd'
+  SlurmdLogFile: '/var/log/slurm/slurmd.log'
+  SlurmdPidFile: '/run/slurmd.pid'
+  SlurmctldPidFile: '/run/slurmctld.pid'
+
+__slurmdbd_config:
+  LogFile: '/var/log/slurm/slurmdbd.log'
+  PidFile: '/run/slurmdbd.pid'
+  DbdPort: '6819'
+  gateway_ip: '{{ gateway_ip }}' # For firewall only
+
+__enroot_config:
+  version: '3.4.0'
+  package_name: 'enroot_3.4.0-1'
+  caps_package_name: 'enroot+caps_3.4.0-1'
+  data_path: '/nfs/scratch/enroot'
+  tmp_path: '/mnt/md0/enroot/tmp'
+
+__pyxis_config:
+  version: '0.12.0'
+
+__slurm_user_name: "{{ (slurm_user | default({})).name | default('slurm') }}"
+__slurm_group_name: "{{ (slurm_user | default({})).group | default(omit) }}"
+
+# This is relevant if you don't plan on compiling
+# Slurm from source (note recommended)
+__slurm_packages:
+  client:  [slurm-client, slurm-wlm-doc]
+  slurmctld: [slurm-wlm]
+  slurmd: [slurm-wlm]
+  slurmdbd: [slurmdbd]

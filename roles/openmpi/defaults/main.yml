@@ -1,0 +1,7 @@
+---
+
+# Note that this must be the same dir as set in slurm/defaults/main.yml
+pmix_install_dir: '/opt/pmix'
+openmpi_version: '4.1.3'
+installer_url: 'https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.3.tar.gz'
+md5_checksum: 'e0b9977385cec8d8e6320c4b75c65f6a'

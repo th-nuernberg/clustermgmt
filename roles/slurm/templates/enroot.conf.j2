@@ -1,0 +1,20 @@
+##
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+# the working directory for enroot
+ENROOT_RUNTIME_PATH {{ __enroot_config.data_path }}/run/$USER
+# where docker layers are stored
+ENROOT_CACHE_PATH {{ __enroot_config.data_path }}/cache/$USER
+# the directory where the filesystems of running containers are stored.
+ENROOT_DATA_PATH {{ __enroot_config.data_path }}/data/$USER
+# controls the compression parameters for squashfs files
+# ENROOT_SQUASH_OPTIONS -noI -noD -noF -noX -no-duplicates
+# enables/disables mounting the home directories of users by default in containers
+ENROOT_MOUNT_HOME n
+# isolates device files inside the container by default. This is useful if you want to allow users to use NVIDIA_VISIBLE_DEVICES to only have a subset of all GPUs accessible inside their containers.
+ENROOT_RESTRICT_DEV y
+# makes the containers writable by default, so that users can install additional packages if needed.
+ENROOT_ROOTFS_WRITABLE y
+# path to temporary data
+ENROOT_TEMP_PATH {{ __enroot_config.tmp_path }}
+

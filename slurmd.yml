@@ -1,0 +1,26 @@
+# This playbook configures a Slurm compute node
+# Run with sudo ansible-playbook -i inventory --ask-become-pass --ask-pass slurmd.yml --tags install
+# (for some weird reason running from augustiner requires sudo)
+- name: Install Slurm node daemon on SlurmNode
+  hosts: slurmNode
+  become: yes
+  remote_user: mladm
+  become_user: root
+  vars_files:
+    - ./vars/vault.yml
+    - ./vars/main.yml
+  vars:
+    slurm_roles: ['exec', 'container']
+    slurm_user: 'slurm'
+    slurm_create_user: no
+    slurm_from_source: yes
+    slurm_version: '21-08-2-1'
+    # slurm_source_install_dir: '/usr/local/sbin/slurm'
+    slurm_source_install_dir: '/usr/local'
+    slurm_config_dir: '/etc/slurm'
+    # Set to 'yes if you want to install munge and copy the existing munge.key to the node'
+    slurm_configure_munge: no
+    # MariaDB is only required on a Controlhost
+    install_mariadb: no
+  roles:
+    - slurm

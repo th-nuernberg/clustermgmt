@@ -1,0 +1,36 @@
+---
+
+- name: Download Anaconda
+  get_url:
+    url: "{{ installer_url }}"
+    dest: /tmp/install-anaconda.sh
+    checksum: "md5:{{ md5_checksum }}"
+
+- name: Create Anaconda folder
+  file:
+    path: "{{ anaconda_path }}"
+    state: directory
+    owner: mladm
+
+# You need to check manually whether Anaconda actually works.
+# The installer sometimes seems to return weird exit codes when used from Ansible
+- name: Run Anaconda installer
+  shell: bash /tmp/install-anaconda.sh -u -b -p "{{ anaconda_path }}"
+  ignore_errors: yes 
+
+- name: Remove Anaconda installer
+  file:
+    state: absent
+    path: /tmp/install-anaconda.sh
+
+- name: Set Anaconda read permission for all
+  file:
+    path: "{{ anaconda_path }}"
+    mode: +r
+    recurse: yes
+
+- name: Set Anaconda execution permission for all
+  file:
+    path: "{{ anaconda_path }}/bin"
+    mode: +x
+    recurse: yes

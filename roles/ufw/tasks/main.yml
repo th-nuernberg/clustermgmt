@@ -1,0 +1,3 @@
+- name: Include setup_ufw task
+  include_tasks: setup_ufw.yaml
+  when: setup_ufw

@@ -1,0 +1,39 @@
+---
+
+- name: Create directories for modulefiles
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "{{ modules_path }}/modulefiles/cuda"
+    - "{{ modules_path }}/modulefiles/python"
+
+- name: Copy Python modulefiles
+  copy:
+    src: "{{ item }}"
+    dest: "{{ modules_path }}/modulefiles/python"
+    owner: root
+    mode: 0644
+  with_fileglob:
+    - python/*
+
+- name: Copy CUDA modulefiles
+  copy:
+    src: "{{ item }}"
+    dest: "{{ modules_path }}/modulefiles/cuda"
+    owner: root
+    mode: 0644
+  with_fileglob:
+    - cuda/*
+
+- name: Copy Open MPI modulefiles
+  copy:
+    src: "{{ item }}"
+    dest: "{{ modules_path }}/modulefiles/openmpi"
+    owner: root
+    mode: 0644
+  with_fileglob:
+    - openmpi/*

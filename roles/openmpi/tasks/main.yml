@@ -1,0 +1,3 @@
+- name: Include install_openmpi task
+  include_tasks: install_openmpi.yml
+  when: install_openmpi

@@ -1,0 +1,37 @@
+---
+
+- name: Install general build dependencies for Open MPI
+  apt:
+    name: ['gcc', 'make']
+    state: present
+
+- name: Download Open MPI
+  get_url:
+    url: "{{ installer_url }}"
+    dest: /tmp/
+    checksum: "md5:{{ md5_checksum }}"
+
+- name: Extract Open MPI sources
+  unarchive:
+    src: "/tmp/openmpi-{{ openmpi_version }}.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+# Default installation path is /usr/local
+# You can set a different path with ./configure --prefix <somepath>
+- name: Configure Open MPI build
+  command: "chdir=/tmp/openmpi-{{ openmpi_version }} ./configure --with-cuda --with-slurm --with-pmix={{ pmix_install_dir }}"
+
+- name: Compile Open MPI all target
+  make: 
+    chdir: "/tmp/openmpi-{{ openmpi_version }}"
+    target: all
+    params:
+      MAKEFLAGS: "-j 16"
+
+- name: Run Open MPI install target
+  make: 
+    chdir: "/tmp/openmpi-{{ openmpi_version }}"
+    target: install
+    params:
+      MAKEFLAGS: "-j 16"

@@ -1,0 +1,44 @@
+---
+
+- name: Install Slurm client
+  package:
+    name: "{{ __slurm_packages.client }}"
+    state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: not slurm_from_source
+
+- name: Install log rotation configuration
+  template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/{{item}}
+  with_items:
+   - slurmdbd
+   - slurmd
+   - slurmctld
+  when: slurm_rotate_logs
+
+- name: Install plugstack.conf
+  template:
+    src: "plugstack.conf.j2"
+    dest: "{{ slurm_config_dir }}/plugstack.conf"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0444
+
+- name: Install job_submit.lua
+  template:
+    src: "job_submit.lua.j2"
+    dest: "{{ slurm_config_dir }}/job_submit.lua"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0444
+
+- name: Install slurm.conf
+  template:
+    src: "slurm.conf.j2"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0444
+  notify:
+    - restart slurmd
+    - restart slurmctld

@@ -1,0 +1,3 @@
+- name: Include install_anaconda task
+  include_tasks: install_anaconda.yml
+  when: setup_conda

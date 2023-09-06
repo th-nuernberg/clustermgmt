@@ -1,0 +1,24 @@
+##
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+##
+# Slurm Logrotate Configuration
+##
+/var/log/slurm/*.log {
+	compress
+	missingok
+	nocopytruncate
+	nocreate
+	nodelaycompress
+	nomail
+	notifempty
+	noolddir
+	rotate 5
+	sharedscripts
+	size=32M
+	create 640 slurm root
+	postrotate
+		/usr/sbin/invoke-rc.d --quiet {{item}} reconfig >/dev/null
+		/bin/sleep 1
+	endscript
+}

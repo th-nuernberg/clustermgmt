@@ -1,0 +1,7 @@
+- name: Include setup_userkeyssh task
+  include_tasks: setup_userkeyssh.yaml
+  when: setup_ssh
+
+- name: Include edit_sshd_conf task
+  include_tasks: edit_sshd_conf.yaml
+  when: setup_ssh

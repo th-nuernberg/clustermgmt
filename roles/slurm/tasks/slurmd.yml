@@ -1,0 +1,57 @@
+---
+
+- name: Install Slurm execution host packages
+  package:
+    name: "{{ __slurm_packages.slurmd }}"
+    state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: not slurm_from_source
+
+- name: Compile Slurm from Source
+  include_tasks: compile.yml
+  when: slurm_from_source and found_version.stdout != slurm_version_pretty
+
+- name: Template the service files for Slurm daemon
+  template:
+    src: "{{ item }}.j2"
+    dest: "/lib/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - slurmd.service
+  when: slurm_from_source and found_version.stdout != slurm_version_pretty
+
+- name: Create slurm spool directory
+  file:
+    path: "{{ __slurm_config.SlurmdSpoolDir }}"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0755
+    state: directory
+  when: slurm_create_dirs
+  notify:
+    - reload slurmd
+
+- name: Create slurm log directory
+  file:
+    path: "{{ __slurm_config.SlurmdLogFile | dirname }}"
+    owner: "{{ __slurm_user_name }}"
+    group: "{{ __slurm_group_name }}"
+    mode: 0755
+    state: directory
+  when: slurm_create_dirs and __slurm_config.SlurmdLogFile != omit
+
+- name: Install additional execution host configs (gres, cgroup, oci)
+  template:
+      src: "{{ item }}.conf.j2"
+      dest: "{{ slurm_config_dir }}/{{ item }}.conf"
+      owner: "{{ __slurm_user_name }}"
+      group: "{{ __slurm_group_name }}"
+      mode: 0444
+      backup: yes
+  with_items:
+    - gres
+    - cgroup
+    - oci
+  notify:
+     - reload slurmd

@@ -1,0 +1,15 @@
+#%Module1.0######################################################################
+##
+## anaconda3 modulefile
+## This file is maintained by Ansible - ALL MODIFICATIONS WILL BE REVERTED
+##
+proc ModulesHelp { } {
+    puts stderr "\tThe Anaconda3 Module\n"
+    puts stderr "\tThis module adds Anaconda Python 3 to your PATH environment variable."
+}
+
+module-whatis   "adds Anaconda Python 3 to your PATH environment variable"
+
+prepend-path     PATH       /opt/anaconda3/bin
+prepend-path     MANPATH    /opt/anaconda3/man
+conflict         python

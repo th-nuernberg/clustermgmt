@@ -1,0 +1,84 @@
+---
+
+- name: Disable IPv6
+  lineinfile:
+    path: /etc/default/ufw
+    search_string: 'IPV6=yes'
+    line: IPV6=no
+
+- name: set secure-nfs
+  copy:
+    backup: yes
+    dest: /etc/ufw/applications.d/secure-nfs
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [secure-nfs]
+      title=SecureNFS
+      description=https://wiki.debian.org/SecuringNFS
+      ports=32764:32769/tcp|32764:32769/udp
+          
+- name: enable ufw service
+  ufw:
+    state: enabled
+
+- name: set ufw allow OpenSSH
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: set ufw allow mosh
+  ufw:
+    rule: allow
+    name: mosh
+
+- name: set ufw allow 2049
+  ufw:
+    rule: allow
+    port: "2049"
+    from_ip: '{{ gateway_ip }}'
+
+- name: set ufw allow 111 
+  ufw:
+    rule: allow
+    port: "111"
+    from_ip: '{{ gateway_ip }}'
+
+- name: set ufw allow secure-nfs
+  ufw:
+    rule: allow
+    name: secure-nfs:
+    from_ip: '{{ gateway_ip }}'
+
+- name: set uff allow controld
+  ufw:
+    rule: allow
+    name: controld
+    from_ip: '{{ gateway_ip }}'
+
+- name: set uff allow slurmd
+  ufw:
+    rule: allow
+    name: slurmd
+    from_ip: '{{ gateway_ip }}'
+
+- name: Allow port range 59000-59999
+  ufw:
+    rule: allow
+    port: 59000:59999
+    proto: TCP
+    from_ip: '{{ gateway_ip }}'
+
+- name: Allow Open MPI intra-node communication
+  ufw:
+    rule: allow
+    name: Anywhere
+    from_ip: '{{ intra_node_com }}'
+
+- name: Allow OpenMPI intra-node communication
+  ufw:
+    rule: allow
+    src: '{{ item }}'
+  loop:
+    - '{{ mpi_nodes }}'

@@ -1,0 +1,35 @@
+---
+
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+
+- name: Install a list of packages
+  apt:
+    pkg:
+        - munge 
+        - libmunge2 
+        - libmunge-dev
+    state: latest
+
+- name: Check munge dir
+  file:
+    path: /etc/munge
+    owner: munge
+    group: munge
+    mode: 0700
+    state: directory
+
+- name: Install munge key
+  copy:
+    src: munge.key
+    dest: /etc/munge/munge.key
+    owner: munge
+    group: munge
+    mode: 0400
+
+- name: Ensure Munge is enabled and running
+  service:
+    name: munge
+    enabled: yes
+    state: started

@@ -1,0 +1,15 @@
+- name: Include install_ldap_client task
+  include_tasks: install_ldap_client.yaml
+  when: ldap_client
+
+- name: Include install_ldap_server task
+  include_tasks: install_ldap_server.yaml
+  when: ldap_server
+
+- name: Include edit_ldap_conf task
+  include_tasks: edit_ldap_conf.yaml
+  when: edit_ldap_conf
+
+- name: Include edit_ldap_ldap_conf task
+  include_tasks: edit_ldap_ldap_conf.yaml
+  when: edit_ldap_conf

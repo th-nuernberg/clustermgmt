@@ -1,0 +1,29 @@
+---
+
+- name: Edit /etc/ssh/sshd_config line 'PermitRootLogin'.
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    backup: yes
+    regexp: '#PermitRootLogin prohibit-password'
+    line: 'PermitRootLogin no'
+
+- name: Edit /etc/ssh/sshd_config line 'MaxAuthTries'.
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    backup: no
+    regexp: '#MaxAuthTries 6'
+    line: 'MaxAuthTries 3'
+
+- name: Edit /etc/ssh/sshd_config line 'AuthorizedKeysCommand'.
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    backup: no
+    regexp: '#AuthorizedKeysCommand none'
+    line: 'AuthorizedKeysCommand /usr/local/bin/userkeys.sh'
+
+- name: Edit /etc/ssh/sshd_config line 'AuthorizedKeysCommandUser'.
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    backup: no
+    regexp: '#AuthorizedKeysCommandUser nobody'
+    line: 'AuthorizedKeysCommandUser nobody'
